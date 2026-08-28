@@ -17,7 +17,16 @@ h1{font-size:22px;margin:0} .sub{color:var(--muted);font-size:13px;margin-top:4p
 section{display:none}section.active{display:block} h2{font-size:18px;margin:18px 0 10px} table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 8px;border-bottom:1px solid #203844;text-align:left;vertical-align:top}th{position:sticky;top:148px;background:#10212b;color:#cde6f2;z-index:5} tr:hover{background:#10212b} .tablebox{overflow:auto;max-height:640px;border:1px solid var(--line);border-radius:14px;background:#081219} .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:#d8edf5;font-size:12px} .good{color:var(--good)}.bad{color:var(--bad)}.gold{color:var(--gold)}
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:12px} canvas{max-height:320px} .insights{display:grid;grid-template-columns:repeat(2,1fr);gap:12px} .insights li{margin:8px 0;color:#d9e9ef} .small{font-size:12px;color:var(--muted)}
 @media(max-width:900px){.controls{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr 1fr}.charts,.insights{grid-template-columns:1fr}th{top:210px}} @media(max-width:520px){.grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.wrap{padding:12px}}
-</style></head><body>
+</style>  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Consultoria" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon-192.svg" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.svg" />
+
+</head><body>
 <header><div class="wrap"><div class="top"><div><h1>Relatório Total de Captação</h1><div class="sub">Ranking • custo por casal • perfil dos casais • consultores/liners/closers • análise de resultados</div></div><div class="badge">CaptaPro Relatório Total 1.0</div></div>
 <div class="controls"><input id="search" placeholder="Buscar profissional, consultor, cidade..."/><select id="promotor"><option value="">Todos promotores</option></select><select id="liner"><option value="">Todos liners</option></select><select id="closer"><option value="">Todos closers</option></select><input type="date" id="dtIni"/><input type="date" id="dtFim"/><button onclick="resetFilters()">Limpar filtros</button></div>
 <div class="tabs"><div class="tab active" data-tab="geral">Geral</div><div class="tab" data-tab="ranking">Ranking captação</div><div class="tab" data-tab="custos">Custos/brindes</div><div class="tab" data-tab="perfil">Perfil dos casais</div><div class="tab" data-tab="consultores">Consultores</div><div class="tab" data-tab="analise">Análise</div><div class="tab" data-tab="base">Base completa</div></div>
@@ -73,4 +82,5 @@ function render(){const arr=filtered(), m=metrics(arr); document.getElementById(
 }
 function drawCharts(arr,rank,closers){charts.forEach(c=>c.destroy());charts=[]; const byDay=Object.entries(groupBy(arr,'Data de atendimento')).map(([k,v])=>[k,v.length]).sort((a,b)=>parseDateBR(a[0]).localeCompare(parseDateBR(b[0]))); const qual={Q:arr.filter(r=>upper(r['Qualificação'])==='Q').length,NQ:arr.filter(r=>upper(r['Qualificação'])==='NQ').length,NoTour:arr.filter(r=>r._notour).length}; const make=(id,type,labels,data,label)=>charts.push(new Chart(document.getElementById(id),{type,data:{labels,datasets:[{label,data}]},options:{responsive:true,plugins:{legend:{display:type==='pie'}},scales:type==='pie'?{}:{y:{beginAtZero:true}}}})); make('chartDia','line',byDay.map(x=>x[0]),byDay.map(x=>x[1]),'Casais'); make('chartQual','pie',Object.keys(qual),Object.values(qual),'Total'); make('chartTopProm','bar',rank.slice(0,10).map(x=>x[0]),rank.slice(0,10).map(x=>x[2].validos),'Casais'); make('chartCloser','bar',closers.slice(0,10).map(x=>x[0]),closers.slice(0,10).map(x=>x[2].vgv),'VGV');}
 render();
-</script></body></html>
+</script>  <script src="./pwa-register.js" defer></script>
+</body></html>
