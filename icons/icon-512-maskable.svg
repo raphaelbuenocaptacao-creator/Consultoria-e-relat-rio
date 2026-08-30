@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Consultoria e Relatório">
+  <rect width="512" height="512" fill="#0b1020"/>
+  <rect x="96" y="96" width="320" height="320" rx="72" fill="#1c2b52"/>
+  <path d="M164 166h184v38H164zm0 72h184v38H164zm0 72h116v38H164z" fill="#ffffff"/>
+  <circle cx="338" cy="329" r="42" fill="#7dd3fc"/>
+  <path d="m318 329 14 14 28-32" fill="none" stroke="#0b1020" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
