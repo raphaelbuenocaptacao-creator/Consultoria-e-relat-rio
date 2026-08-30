@@ -1,12 +1,20 @@
-const CACHE_VERSION = 'consultoria-relatorio-v2';
+const CACHE_VERSION = 'consultoria-relatorio-v3-safe';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const APP_SHELL = new Set(['./', './index.html', './manifest.webmanifest', './icons/icon-192.svg', './icons/icon-512.svg', './icons/icon-512-maskable.svg']);
 const PRIVATE_PATH = /\/(api|auth|login|logout|admin|session|sessions|token|tokens|account|profile|me)(\/|\?|$)/i;
+const SENSITIVE_QUERY_KEYS = new Set(['token','access_token','refresh_token','password','passwd','secret','session','session_id','auth','authorization','api_key','apikey','code','credential','credentials']);
+
+function hasSensitiveQuery(url) {
+  for (const key of url.searchParams.keys()) {
+    if (SENSITIVE_QUERY_KEYS.has(key.toLowerCase())) return true;
+  }
+  return false;
+}
 
 function isSafeRequest(request) {
-  if (request.method !== 'GET' || request.headers.has('Authorization')) return false;
+  if (request.method !== 'GET' || request.headers.has('Authorization') || request.headers.has('Cookie')) return false;
   const url = new URL(request.url);
-  return url.origin === self.location.origin && !PRIVATE_PATH.test(url.pathname);
+  return url.origin === self.location.origin && !PRIVATE_PATH.test(url.pathname) && !hasSensitiveQuery(url);
 }
 
 self.addEventListener('install', event => {
@@ -31,9 +39,10 @@ self.addEventListener('fetch', event => {
   }
 
   const url = new URL(request.url);
+  if (url.search) return;
   const scopePath = new URL(self.registration.scope).pathname;
   const relative = './' + url.pathname.slice(scopePath.length);
   if (!APP_SHELL.has(relative)) return;
 
-  event.respondWith(caches.match(request).then(cached => cached || fetch(request)));
+  event.respondWith(caches.match(request).then(cached => cached || fetch(request, { cache: 'no-store' })));
 });
