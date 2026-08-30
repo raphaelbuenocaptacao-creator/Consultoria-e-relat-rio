@@ -1,4 +1,5 @@
 {
+  "id": "./",
   "name": "Consultoria e Relatório",
   "short_name": "Consultoria",
   "description": "Aplicativo de consultoria e relatórios.",
@@ -8,6 +9,7 @@
   "background_color": "#0b1020",
   "theme_color": "#0b1020",
   "orientation": "portrait-primary",
+  "lang": "pt-BR",
   "icons": [
     {
       "src": "icons/icon-192.svg",
@@ -19,7 +21,13 @@
       "src": "icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
