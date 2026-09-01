@@ -1,4 +1,5 @@
-const CACHE_VERSION = 'consultoria-relatorio-v4-safe-shell';
+const CACHE_PREFIX = 'consultoria-relatorio-';
+const CACHE_VERSION = `${CACHE_PREFIX}v5-safe-shell`;
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const APP_SHELL = new Set([
   './',
@@ -58,7 +59,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== STATIC_CACHE).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== STATIC_CACHE).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
