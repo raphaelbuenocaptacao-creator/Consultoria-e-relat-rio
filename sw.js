@@ -1,13 +1,13 @@
 const CACHE_PREFIX = 'consultoria-relatorio-';
-const CACHE_VERSION = `${CACHE_PREFIX}v6-safe-shell`;
+const CACHE_VERSION = `${CACHE_PREFIX}v7-raster-safe-shell`;
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const APP_SHELL = new Set([
   './',
   './index.html',
   './manifest.webmanifest',
-  './icons/icon-192.svg',
-  './icons/icon-512.svg',
-  './icons/icon-512-maskable.svg'
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-512-maskable.png'
 ]);
 const PRIVATE_PATH = /\/(api|auth|login|logout|admin|session|sessions|token|tokens|account|profile|me)(\/|\?|$)/i;
 const SENSITIVE_QUERY_KEYS = new Set([
