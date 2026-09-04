@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'consultoria-relatorio-';
-const CACHE_VERSION = `${CACHE_PREFIX}v5-safe-shell`;
+const CACHE_VERSION = `${CACHE_PREFIX}v6-safe-shell`;
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const APP_SHELL = new Set([
   './',
@@ -23,17 +23,22 @@ function hasSensitiveQuery(url) {
 }
 
 function isSafeRequest(request) {
-  if (request.method !== 'GET' || request.headers.has('Authorization') || request.headers.has('Cookie')) return false;
+  if (request.method !== 'GET') return false;
+  if (
+    request.headers.has('Authorization') ||
+    request.headers.has('Cookie') ||
+    request.headers.has('Range') ||
+    request.headers.has('If-Range')
+  ) return false;
   const url = new URL(request.url);
   return url.origin === self.location.origin && !PRIVATE_PATH.test(url.pathname) && !hasSensitiveQuery(url);
 }
 
 function isCacheableResponse(response) {
-  if (!response || !response.ok || response.type === 'opaque') return false;
+  if (!response || !response.ok || response.type === 'opaque' || response.redirected || response.status === 206) return false;
+  if (response.headers.has('Content-Range') || response.headers.has('Set-Cookie')) return false;
   const cacheControl = (response.headers.get('Cache-Control') || '').toLowerCase();
-  if (cacheControl.includes('private') || cacheControl.includes('no-store')) return false;
-  if (response.headers.has('Set-Cookie')) return false;
-  return true;
+  return !cacheControl.includes('private') && !cacheControl.includes('no-store');
 }
 
 async function precacheShell() {
@@ -43,7 +48,7 @@ async function precacheShell() {
       const response = await fetch(path, {
         cache: 'no-store',
         credentials: 'omit',
-        redirect: 'follow'
+        redirect: 'error'
       });
       if (isCacheableResponse(response)) await cache.put(path, response.clone());
     } catch (error) {
@@ -69,10 +74,14 @@ self.addEventListener('fetch', event => {
   if (!isSafeRequest(request)) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request, { cache: 'no-store', credentials: 'same-origin' })
-        .catch(() => caches.match('./index.html'))
-    );
+    event.respondWith((async () => {
+      try {
+        return await fetch(request, { cache: 'no-store', credentials: 'same-origin', redirect: 'error' });
+      } catch {
+        const fallback = await caches.match('./index.html');
+        return fallback || Response.error();
+      }
+    })());
     return;
   }
 
@@ -86,11 +95,15 @@ self.addEventListener('fetch', event => {
     const cached = await caches.match(request);
     if (cached) return cached;
 
-    const response = await fetch(request, { cache: 'no-store', credentials: 'omit' });
-    if (isCacheableResponse(response)) {
-      const cache = await caches.open(STATIC_CACHE);
-      await cache.put(request, response.clone());
+    try {
+      const response = await fetch(request, { cache: 'no-store', credentials: 'omit', redirect: 'error' });
+      if (isCacheableResponse(response)) {
+        const cache = await caches.open(STATIC_CACHE);
+        await cache.put(request, response.clone());
+      }
+      return response;
+    } catch {
+      return Response.error();
     }
-    return response;
   })());
 });
