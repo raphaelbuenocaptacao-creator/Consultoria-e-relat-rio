@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'consultoria-relatorio-';
-const CACHE_VERSION = `${CACHE_PREFIX}v7-raster-safe-shell`;
+const CACHE_VERSION = `${CACHE_PREFIX}v8-private-vary-safe-shell`;
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const APP_SHELL = new Set([
   './',
@@ -37,6 +37,8 @@ function isSafeRequest(request) {
 function isCacheableResponse(response) {
   if (!response || !response.ok || response.type === 'opaque' || response.redirected || response.status === 206) return false;
   if (response.headers.has('Content-Range') || response.headers.has('Set-Cookie')) return false;
+  const vary = (response.headers.get('Vary') || '').toLowerCase();
+  if (vary.includes('cookie') || vary.includes('authorization')) return false;
   const cacheControl = (response.headers.get('Cache-Control') || '').toLowerCase();
   return !cacheControl.includes('private') && !cacheControl.includes('no-store');
 }
