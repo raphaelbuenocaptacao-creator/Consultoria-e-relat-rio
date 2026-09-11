@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'consultoria-relatorio-';
-const CACHE_VERSION = `${CACHE_PREFIX}v10-private-vary-range-safe-shell`;
+const CACHE_VERSION = `${CACHE_PREFIX}v11-private-vary-if-range-safe-shell`;
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const APP_SHELL = new Set([
   './',
@@ -39,7 +39,7 @@ function isCacheableResponse(response) {
   if (response.headers.has('Content-Range') || response.headers.has('Set-Cookie')) return false;
   const vary = (response.headers.get('Vary') || '').toLowerCase();
   const varyFields = vary.split(',').map(value => value.trim()).filter(Boolean);
-  if (varyFields.some(value => value === '*' || value === 'cookie' || value === 'authorization' || value === 'range')) return false;
+  if (varyFields.some(value => value === '*' || value === 'cookie' || value === 'authorization' || value === 'range' || value === 'if-range')) return false;
   const cacheControl = (response.headers.get('Cache-Control') || '').toLowerCase();
   return !cacheControl.includes('private') && !cacheControl.includes('no-store');
 }
