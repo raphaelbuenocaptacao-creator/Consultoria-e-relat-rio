@@ -1,0 +1,87 @@
+name: Consultoria PWA Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'manifest.webmanifest'
+      - 'pwa-register.js'
+      - 'sw.js'
+      - 'icons/**'
+      - '.github/workflows/pwa-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate required PWA files
+        run: |
+          test -s index.html
+          test -s manifest.webmanifest
+          test -s pwa-register.js
+          test -s sw.js
+          test -s icons/icon-192.png
+          test -s icons/icon-512.png
+          test -s icons/icon-512-maskable.png
+
+      - name: Validate JavaScript syntax
+        run: |
+          node --check sw.js
+          node --check pwa-register.js
+
+      - name: Validate manifest
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('manifest.webmanifest').read_text(encoding='utf-8'))
+          for key in ('name','short_name','start_url','scope','display','theme_color','background_color','icons'):
+              assert manifest.get(key), f'missing manifest field: {key}'
+          assert manifest['display'] in {'standalone','fullscreen','minimal-ui'}
+          icons = manifest['icons']
+          assert any(i.get('sizes') == '192x192' and i.get('type') == 'image/png' for i in icons)
+          assert any(i.get('sizes') == '512x512' and i.get('type') == 'image/png' for i in icons)
+          assert any('maskable' in i.get('purpose','') for i in icons)
+          PY
+
+      - name: Validate integration and install support
+        run: |
+          grep -q 'rel="manifest"' index.html
+          grep -q 'theme-color' index.html
+          grep -q 'mobile-web-app-capable' index.html
+          grep -q 'pwa-register.js' index.html
+          grep -q 'serviceWorker' pwa-register.js
+          grep -q 'beforeinstallprompt' pwa-register.js
+          grep -q 'appinstalled' pwa-register.js
+          grep -q 'updateViaCache' pwa-register.js
+
+      - name: Validate private and range cache safety
+        run: |
+          grep -q "request.headers.has('Authorization')" sw.js
+          grep -q "request.headers.has('Cookie')" sw.js
+          grep -q "request.headers.has('Range')" sw.js
+          grep -q "request.headers.has('If-Range')" sw.js
+          grep -q "response.status === 206" sw.js
+          grep -q "response.headers.has('Content-Range')" sw.js
+          grep -q "response.headers.has('Set-Cookie')" sw.js
+          grep -q "value === 'authorization'" sw.js
+          grep -q "value === 'cookie'" sw.js
+          grep -q "value === 'range'" sw.js
+          grep -q "value === 'if-range'" sw.js
+          grep -q "cacheControl.includes('private')" sw.js
+          grep -q "cacheControl.includes('no-store')" sw.js
+          grep -q "request.mode === 'navigate'" sw.js
+          grep -q "cache: 'no-store'" sw.js
+          grep -q "key.startsWith(CACHE_PREFIX)" sw.js
+
+      - name: Validate shell-only runtime caching
+        run: |
+          grep -q 'APP_SHELL.has(relative)' sw.js
+          grep -q 'if (url.search) return' sw.js
