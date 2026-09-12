@@ -62,6 +62,20 @@ jobs:
           grep -q 'appinstalled' pwa-register.js
           grep -q 'updateViaCache' pwa-register.js
 
+      - name: Validate service worker version alignment
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          sw = Path('sw.js').read_text(encoding='utf-8')
+          reg = Path('pwa-register.js').read_text(encoding='utf-8')
+          sw_match = re.search(r"CACHE_VERSION = `\$\{CACHE_PREFIX\}([^`]+)`", sw)
+          reg_match = re.search(r"sw\.js\?v=([^'\"]+)", reg)
+          assert sw_match, 'CACHE_VERSION suffix not found in sw.js'
+          assert reg_match, 'versioned sw.js registration not found in pwa-register.js'
+          assert sw_match.group(1) == reg_match.group(1), f"SW version mismatch: {sw_match.group(1)} != {reg_match.group(1)}"
+          PY
+
       - name: Validate private and range cache safety
         run: |
           grep -q "request.headers.has('Authorization')" sw.js
