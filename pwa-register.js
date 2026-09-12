@@ -5,7 +5,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        const registration = await navigator.serviceWorker.register('./sw.js?v=11-private-vary-if-range-safe-shell', { scope: './', updateViaCache: 'none' });
+        const registration = await navigator.serviceWorker.register('./sw.js?v=v11-private-vary-if-range-safe-shell', { scope: './', updateViaCache: 'none' });
         await registration.update();
       } catch (error) {
         console.warn('PWA service worker registration failed:', error);
