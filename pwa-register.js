@@ -7,6 +7,14 @@
       try {
         const registration = await navigator.serviceWorker.register('./sw.js?v=v11-private-vary-if-range-safe-shell', { scope: './', updateViaCache: 'none' });
         await registration.update();
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            registration.update().catch(error => {
+              console.warn('PWA service worker update check failed:', error);
+            });
+          }
+        });
       } catch (error) {
         console.warn('PWA service worker registration failed:', error);
       }
