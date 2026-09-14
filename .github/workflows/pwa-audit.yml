@@ -2,7 +2,7 @@ name: Consultoria PWA Audit
 
 on:
   push:
-    branches: [main]
+    branches: [main, pwa-update-freshness]
     paths:
       - 'index.html'
       - 'manifest.webmanifest'
@@ -61,6 +61,8 @@ jobs:
           grep -q 'beforeinstallprompt' pwa-register.js
           grep -q 'appinstalled' pwa-register.js
           grep -q 'updateViaCache' pwa-register.js
+          grep -q 'visibilitychange' pwa-register.js
+          grep -q 'registration.update' pwa-register.js
 
       - name: Validate service worker version alignment
         run: |
